@@ -170,8 +170,32 @@ async function iniciar() {
   render();
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('service-worker.js').catch((e) => {
+    navigator.serviceWorker.register('service-worker.js').then((registro) => {
+      // Si ya hay una versión nueva esperando, actívala de una vez.
+      if (registro.waiting) {
+        registro.waiting.postMessage('SKIP_WAITING');
+      }
+      // Cuando se detecta una actualización, actívala apenas termine de instalarse.
+      registro.addEventListener('updatefound', () => {
+        const nuevoWorker = registro.installing;
+        if (!nuevoWorker) return;
+        nuevoWorker.addEventListener('statechange', () => {
+          if (nuevoWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            nuevoWorker.postMessage('SKIP_WAITING');
+          }
+        });
+      });
+    }).catch((e) => {
       console.warn('No se pudo registrar el service worker:', e);
+    });
+
+    // Cuando el nuevo service worker toma el control, recarga la página
+    // una sola vez para que se vea la versión actualizada.
+    let recargaEnCurso = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (recargaEnCurso) return;
+      recargaEnCurso = true;
+      window.location.reload();
     });
   }
 
