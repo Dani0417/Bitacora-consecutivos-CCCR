@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Bitácora de Consecutivos</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1F2A33">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="grid-bg">
+  <header>
+    <p class="eyebrow">Control documental · BIM / Obra</p>
+    <h1>Bitácora de Consecutivos</h1>
+    <p class="sub">Registro de oficios por fecha, componente y destinatario</p>
+    <span class="estado-offline" id="estadoOffline">Sin conexión — trabajando en modo local</span>
+  </header>
+
+  <main>
+
+    <div class="sello" id="sello">
+      <div class="txt">Consecutivo asignado</div>
+      <div class="num" id="selloNum">—</div>
+      <div class="acciones">
+        <button class="secundario" id="btnCopiar">Copiar número</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Próximo consecutivo <span class="contador-header" id="proximoPreview">—</span></h2>
+
+      <label for="fecha">Fecha</label>
+      <input type="date" id="fecha">
+
+      <label for="destinatario">Dirigido a</label>
+      <input type="text" id="destinatario" placeholder="Persona o entidad destinataria">
+
+      <label>Componente</label>
+      <div class="componentes">
+        <button type="button" class="comp-btn" data-c="Técnico"><span class="dot"></span>Técnico</button>
+        <button type="button" class="comp-btn" data-c="Ambiental"><span class="dot"></span>Ambiental</button>
+        <button type="button" class="comp-btn" data-c="Social"><span class="dot"></span>Social</button>
+        <button type="button" class="comp-btn" data-c="SST"><span class="dot"></span>SST</button>
+      </div>
+
+      <label for="asunto">Asunto del oficio</label>
+      <input type="text" id="asunto" placeholder="Descripción breve del oficio">
+
+      <button class="primario" id="btnGenerar">Generar consecutivo y guardar</button>
+    </div>
+
+    <div class="panel">
+      <h2>
+        Historial <span class="contador-header" id="contadorTotal">0 oficios</span>
+      </h2>
+      <div class="barra-filtro">
+        <input type="text" id="buscar" placeholder="Buscar por asunto, destinatario o consecutivo">
+        <select id="filtroComp">
+          <option value="">Todos</option>
+          <option value="Técnico">Técnico</option>
+          <option value="Ambiental">Ambiental</option>
+          <option value="Social">Social</option>
+          <option value="SST">SST</option>
+        </select>
+      </div>
+      <div id="lista"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Exportar y respaldo</h2>
+      <button class="secundario" id="btnAbrirExportar" style="margin-bottom:8px;">Descargar Excel (.xlsx)</button>
+      <div class="fila-botones">
+        <button class="secundario" id="btnRespaldoExportar">Exportar respaldo</button>
+        <button class="secundario" id="btnRespaldoImportar">Importar respaldo</button>
+      </div>
+      <input type="file" id="inputRespaldo" accept="application/json" class="oculto">
+      <p class="aviso">El respaldo guarda todos tus registros y el número de consecutivo actual. Úsalo antes de cambiar de celular.</p>
+    </div>
+
+    <div class="panel">
+      <h2>Avanzado</h2>
+      <label for="ajusteConsecutivo">Establecer el próximo consecutivo manualmente</label>
+      <input type="number" id="ajusteConsecutivo" min="1" placeholder="Ej. 48">
+      <button class="secundario peligro" id="btnAjustarConsecutivo" style="margin-top:10px;">Aplicar ajuste</button>
+      <p class="aviso">Úsalo solo una vez, al instalar la aplicación por primera vez, para que continúe desde el número que ya llevas en papel o en tu Excel actual. Pide confirmación antes de aplicarse.</p>
+    </div>
+
+  </main>
+</div>
+
+<!-- Modal de configuración de exportación -->
+<div class="modal-overlay" id="modalExportar">
+  <div class="modal">
+    <h3>Configurar exportación</h3>
+    <p class="modal-sub">Elige el período y los campos que quieres en el Excel.</p>
+
+    <div class="seccion">
+      <div class="seccion-titulo">Rango de fechas</div>
+      <label for="fechaDesde">Desde</label>
+      <input type="date" id="fechaDesde">
+      <label for="fechaHasta">Hasta</label>
+      <input type="date" id="fechaHasta">
+      <div class="check-todos">
+        <input type="checkbox" id="chkExportarTodos">
+        <label for="chkExportarTodos" style="margin:0;">Exportar todos los registros (ignora el rango)</label>
+      </div>
+    </div>
+
+    <div class="seccion">
+      <div class="seccion-titulo">Campos a incluir y orden</div>
+      <div class="col-config" id="colConfig"></div>
+    </div>
+
+    <div class="modal-acciones">
+      <button class="secundario" id="btnCancelarExportar">Cancelar</button>
+      <button class="primario" id="btnGenerarExcel">Generar Excel</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
