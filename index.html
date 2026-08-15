@@ -21,6 +21,11 @@
 
   <main>
 
+    <div class="caja-disponible">
+      <div class="txt">Consecutivo disponible</div>
+      <div class="num" id="consecutivoDisponible">—</div>
+    </div>
+
     <div class="sello" id="sello">
       <div class="txt">Consecutivo asignado</div>
       <div class="num" id="selloNum">—</div>
@@ -30,7 +35,7 @@
     </div>
 
     <div class="panel">
-      <h2>Próximo consecutivo <span class="contador-header" id="proximoPreview">—</span></h2>
+      <h2>Nuevo registro</h2>
 
       <label for="fecha">Fecha</label>
       <input type="date" id="fecha">
@@ -44,7 +49,9 @@
         <button type="button" class="comp-btn" data-c="Ambiental"><span class="dot"></span>Ambiental</button>
         <button type="button" class="comp-btn" data-c="Social"><span class="dot"></span>Social</button>
         <button type="button" class="comp-btn" data-c="SST"><span class="dot"></span>SST</button>
+        <button type="button" class="comp-btn" data-c="Otro"><span class="dot"></span>Otro</button>
       </div>
+      <input type="text" id="componenteOtro" placeholder="Escribe el componente" class="oculto">
 
       <label for="asunto">Asunto del oficio</label>
       <input type="text" id="asunto" placeholder="Descripción breve del oficio">
@@ -64,6 +71,7 @@
           <option value="Ambiental">Ambiental</option>
           <option value="Social">Social</option>
           <option value="SST">SST</option>
+          <option value="Otro">Otro</option>
         </select>
       </div>
       <div id="lista"></div>

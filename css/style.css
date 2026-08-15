@@ -150,7 +150,9 @@ input:focus, select:focus{
 .comp-btn[data-c="Ambiental"] .dot{background:var(--ambiental);}
 .comp-btn[data-c="Social"] .dot{background:var(--social);}
 .comp-btn[data-c="SST"] .dot{background:var(--sst);}
+.comp-btn[data-c="Otro"] .dot{background:var(--grafito-suave);}
 .comp-btn.activo{border-color:var(--grafito);color:var(--grafito);background:#EFEFEA;}
+#componenteOtro{margin-top:8px;}
 
 button.primario{
   width:100%;
@@ -193,8 +195,7 @@ button.peligro{
   gap:8px;
 }
 
-.sello{
-  display:none;
+.caja-disponible, .sello{
   border:2px solid var(--acento);
   border-radius:6px;
   padding:14px;
@@ -202,15 +203,16 @@ button.peligro{
   background:#F3F8F9;
   text-align:center;
 }
+.sello{display:none;}
 .sello.mostrar{display:block;}
-.sello .num{
+.caja-disponible .num, .sello .num{
   font-family:var(--mono);
   font-size:26px;
   font-weight:700;
   letter-spacing:0.03em;
   color:var(--acento);
 }
-.sello .txt{
+.caja-disponible .txt, .sello .txt{
   font-size:11px;
   color:var(--grafito-suave);
   text-transform:uppercase;
@@ -237,6 +239,18 @@ button.peligro{
 .registro-item .meta{font-size:11px;color:var(--grafito-suave);margin-top:5px;display:flex;justify-content:space-between;gap:8px;}
 .registro-item .comp-tag{font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:10.5px;}
 .registro-item .del{background:none;border:none;color:#B0392C;font-size:11px;cursor:pointer;padding:0;font-family:var(--sans);text-decoration:underline;white-space:nowrap;}
+.registro-item .editar{background:none;border:none;color:var(--acento);font-size:11px;cursor:pointer;padding:0;font-family:var(--sans);text-decoration:underline;white-space:nowrap;}
+.registro-item .acciones-item{display:flex;gap:12px;}
+
+.edicion-item{border:1.5px solid var(--acento);border-radius:4px;padding:12px;margin-bottom:8px;background:#F8FBFB;}
+.edicion-item .cons-fija{font-family:var(--mono);font-weight:700;font-size:13px;color:var(--grafito-suave);margin-bottom:8px;}
+.edicion-item label{margin-top:10px;}
+.edicion-item label:first-of-type{margin-top:0;}
+.edicion-item select{width:100%;padding:10px 11px;border:1px solid var(--linea);border-radius:4px;font-size:14px;font-family:var(--sans);background:#FCFCFB;color:var(--grafito);}
+.edicion-item .acciones-edicion{display:flex;gap:8px;margin-top:12px;}
+.edicion-item .acciones-edicion button{flex:1;padding:10px;border-radius:4px;font-size:13px;font-weight:600;font-family:var(--sans);cursor:pointer;}
+.edicion-item .btn-guardar{background:var(--grafito);color:#EFEFEA;border:none;}
+.edicion-item .btn-cancelar{background:none;border:1px solid var(--linea);color:var(--grafito-suave);}
 
 .vacio{text-align:center;padding:24px 10px;color:var(--grafito-suave);font-size:13px;}
 

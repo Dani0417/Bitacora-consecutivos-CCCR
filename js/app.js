@@ -149,8 +149,10 @@ function formatearConsecutivo(numero, fechaISO) {
 function actualizarVistaPrevioConsecutivo() {
   const fecha = document.getElementById('fecha').value || hoyISO();
   const siguiente = ultimoConsecutivo + 1;
-  document.getElementById('proximoPreview').textContent = formatearConsecutivo(siguiente, fecha);
+  document.getElementById('consecutivoDisponible').textContent = formatearConsecutivo(siguiente, fecha);
 }
+
+const COMPONENTES_ESTANDAR = ['Técnico', 'Ambiental', 'Social', 'SST'];
 
 /* ---------------------- Inicialización ---------------------- */
 
@@ -192,6 +194,14 @@ document.querySelectorAll('.comp-btn').forEach(btn => {
     document.querySelectorAll('.comp-btn').forEach(b => b.classList.remove('activo'));
     btn.classList.add('activo');
     componenteSeleccionado = btn.dataset.c;
+    const otroInput = document.getElementById('componenteOtro');
+    if (componenteSeleccionado === 'Otro') {
+      otroInput.classList.remove('oculto');
+      otroInput.focus();
+    } else {
+      otroInput.classList.add('oculto');
+      otroInput.value = '';
+    }
   });
 });
 
@@ -204,6 +214,12 @@ document.getElementById('btnGenerar').addEventListener('click', async () => {
   if (!componenteSeleccionado) { alert('Selecciona el componente.'); return; }
   if (!destinatario) { alert('Registra a quién va dirigido.'); return; }
 
+  let componenteFinal = componenteSeleccionado;
+  if (componenteSeleccionado === 'Otro') {
+    componenteFinal = document.getElementById('componenteOtro').value.trim();
+    if (!componenteFinal) { alert('Escribe el componente en el campo "Otro".'); return; }
+  }
+
   const numero = ultimoConsecutivo + 1;
   const consecutivoTexto = formatearConsecutivo(numero, fecha);
 
@@ -214,7 +230,7 @@ document.getElementById('btnGenerar').addEventListener('click', async () => {
     fecha,
     asunto,
     destinatario,
-    componente: componenteSeleccionado,
+    componente: componenteFinal,
     creado: new Date().toISOString()
   };
 
@@ -229,6 +245,8 @@ document.getElementById('btnGenerar').addEventListener('click', async () => {
 
   document.getElementById('asunto').value = '';
   document.getElementById('destinatario').value = '';
+  document.getElementById('componenteOtro').value = '';
+  document.getElementById('componenteOtro').classList.add('oculto');
   componenteSeleccionado = null;
   document.querySelectorAll('.comp-btn').forEach(b => b.classList.remove('activo'));
 
@@ -245,6 +263,8 @@ document.getElementById('btnCopiar').addEventListener('click', () => {
 
 document.getElementById('buscar').addEventListener('input', render);
 document.getElementById('filtroComp').addEventListener('change', render);
+
+let editandoId = null;
 
 async function borrar(id) {
   const registro = registros.find(r => r.id === id);
@@ -273,7 +293,12 @@ function render() {
       r.destinatario.toLowerCase().includes(q) ||
       r.consecutivo.toLowerCase().includes(q) ||
       r.fecha.includes(q);
-    const coincideComp = !filtroComp || r.componente === filtroComp;
+    let coincideComp = true;
+    if (filtroComp === 'Otro') {
+      coincideComp = !COMPONENTES_ESTANDAR.includes(r.componente);
+    } else if (filtroComp) {
+      coincideComp = r.componente === filtroComp;
+    }
     return coincideTexto && coincideComp;
   });
 
@@ -284,23 +309,105 @@ function render() {
     return;
   }
 
-  lista.innerHTML = visibles.map(r => `
-    <div class="registro-item" data-c="${r.componente}">
+  lista.innerHTML = visibles.map(r => r.id === editandoId ? renderEdicion(r) : renderItem(r)).join('');
+
+  lista.querySelectorAll('.del').forEach(b => {
+    b.addEventListener('click', () => borrar(b.dataset.id));
+  });
+  lista.querySelectorAll('.editar').forEach(b => {
+    b.addEventListener('click', () => { editandoId = b.dataset.id; render(); });
+  });
+  lista.querySelectorAll('.btn-cancelar').forEach(b => {
+    b.addEventListener('click', () => { editandoId = null; render(); });
+  });
+  lista.querySelectorAll('.btn-guardar').forEach(b => {
+    b.addEventListener('click', () => guardarEdicion(b.dataset.id));
+  });
+  lista.querySelectorAll('.edicion-item select[data-comp-select]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const id = sel.dataset.compSelect;
+      const otro = document.getElementById(`edit-otro-${id}`);
+      otro.classList.toggle('oculto', sel.value !== 'Otro');
+    });
+  });
+}
+
+function renderItem(r) {
+  return `
+    <div class="registro-item" data-c="${COMPONENTES_ESTANDAR.includes(r.componente) ? r.componente : ''}">
       <div class="fila1">
         <span class="cons">${r.consecutivo}</span>
         <span class="fecha">${r.fecha}</span>
       </div>
       <div class="asunto">${escapeHtml(r.asunto)}</div>
       <div class="meta">
-        <span class="comp-tag">${r.componente} · ${escapeHtml(r.destinatario)}</span>
-        <button class="del" data-id="${r.id}">Eliminar</button>
+        <span class="comp-tag">${escapeHtml(r.componente)} · ${escapeHtml(r.destinatario)}</span>
+        <span class="acciones-item">
+          <button class="editar" data-id="${r.id}">Editar</button>
+          <button class="del" data-id="${r.id}">Eliminar</button>
+        </span>
       </div>
     </div>
-  `).join('');
+  `;
+}
 
-  lista.querySelectorAll('.del').forEach(b => {
-    b.addEventListener('click', () => borrar(b.dataset.id));
-  });
+function renderEdicion(r) {
+  const esEstandar = COMPONENTES_ESTANDAR.includes(r.componente);
+  const opciones = COMPONENTES_ESTANDAR.map(c =>
+    `<option value="${c}" ${r.componente === c ? 'selected' : ''}>${c}</option>`
+  ).join('') + `<option value="Otro" ${!esEstandar ? 'selected' : ''}>Otro</option>`;
+
+  return `
+    <div class="edicion-item">
+      <div class="cons-fija">${r.consecutivo} — el consecutivo no se puede modificar</div>
+
+      <label>Fecha</label>
+      <input type="date" id="edit-fecha-${r.id}" value="${r.fecha}">
+
+      <label>Dirigido a</label>
+      <input type="text" id="edit-destinatario-${r.id}" value="${escapeHtml(r.destinatario)}">
+
+      <label>Componente</label>
+      <select id="edit-componente-${r.id}" data-comp-select="${r.id}">${opciones}</select>
+      <input type="text" id="edit-otro-${r.id}" placeholder="Escribe el componente" value="${!esEstandar ? escapeHtml(r.componente) : ''}" class="${esEstandar ? 'oculto' : ''}" style="margin-top:8px;">
+
+      <label>Asunto</label>
+      <input type="text" id="edit-asunto-${r.id}" value="${escapeHtml(r.asunto)}">
+
+      <div class="acciones-edicion">
+        <button class="btn-cancelar" data-id="${r.id}">Cancelar</button>
+        <button class="btn-guardar" data-id="${r.id}">Guardar cambios</button>
+      </div>
+    </div>
+  `;
+}
+
+async function guardarEdicion(id) {
+  const registro = registros.find(r => r.id === id);
+  if (!registro) return;
+
+  const fecha = document.getElementById(`edit-fecha-${id}`).value;
+  const destinatario = document.getElementById(`edit-destinatario-${id}`).value.trim();
+  const asunto = document.getElementById(`edit-asunto-${id}`).value.trim();
+  const compSeleccion = document.getElementById(`edit-componente-${id}`).value;
+  let componenteFinal = compSeleccion;
+  if (compSeleccion === 'Otro') {
+    componenteFinal = document.getElementById(`edit-otro-${id}`).value.trim();
+  }
+
+  if (!fecha) { alert('La fecha no puede quedar vacía.'); return; }
+  if (!destinatario) { alert('El campo "Dirigido a" no puede quedar vacío.'); return; }
+  if (!asunto) { alert('El asunto no puede quedar vacío.'); return; }
+  if (!componenteFinal) { alert('Escribe el componente en el campo "Otro".'); return; }
+
+  registro.fecha = fecha;
+  registro.destinatario = destinatario;
+  registro.asunto = asunto;
+  registro.componente = componenteFinal;
+
+  await putRegistro(registro);
+  editandoId = null;
+  render();
 }
 
 /* ---------------------- Ajuste manual del consecutivo ---------------------- */
